@@ -9,6 +9,7 @@ import quantstats as qs
 import gurobipy as gp
 import warnings
 import argparse
+from scipy.optimize import minimize
 
 """
 Project Setup
@@ -74,7 +75,19 @@ class MyPortfolio:
         """
         TODO: Complete Task 4 Below
         """
+        constraints = ({'type': 'eq', 'fun': lambda x: np.sum(x) - 1})
 
+        initial_weights = np.array([1 / len(assets) for _ in range(len(assets))])
+
+        result = minimize(lambda weights: -(
+            np.sum(self.returns[assets].mean() * weights) /
+            np.sqrt(np.dot(weights.T, np.dot(self.returns[assets].cov(), weights)))
+        ),
+            initial_weights,
+            method='SLSQP',
+            constraints=constraints)
+
+        self.portfolio_weights.loc[:, assets] = result.x
         """
         TODO: Complete Task 4 Above
         """
